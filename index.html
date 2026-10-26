@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Bitácora Loncin SX3</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#b8326f">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=Barlow:wght@400;500&display=swap">
+<style>
+:root{--bg:#eef1f3;--sf:#fff;--ink:#1b2227;--mut:#5d6a73;--ln:#d5dce1;--ac:#b8326f;--acs:#f8e1ec;--ok:#277a4d;--oks:#dff0e6;--wa:#9a5b00;--was:#fbeccf;--bad:#b3261e;--bads:#f8dcd9;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#12171a;--sf:#1c2328;--ink:#e8edf0;--mut:#9aa8b1;--ln:#2f3a41;--ac:#ee7aab;--acs:#3a2230;--ok:#6fcf9a;--oks:#1d3328;--wa:#f0b955;--was:#3a2e17;--bad:#ff8f86;--bads:#3d2220}}
+:root[data-theme="dark"]{--bg:#12171a;--sf:#1c2328;--ink:#e8edf0;--mut:#9aa8b1;--ln:#2f3a41;--ac:#ee7aab;--acs:#3a2230;--ok:#6fcf9a;--oks:#1d3328;--wa:#f0b955;--was:#3a2e17;--bad:#ff8f86;--bads:#3d2220}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 Barlow,system-ui,-apple-system,Segoe UI,sans-serif}
+main{max-width:560px;margin:0 auto;padding:16px 16px 40px}
+h1,h2,.num{font-family:"Barlow Semi Condensed",Barlow,system-ui,sans-serif;margin:0}
+h1{font-size:26px;font-weight:700;letter-spacing:.2px}
+h2{font-size:19px;font-weight:600;margin:22px 0 8px}
+.sub{color:var(--mut);font-size:14px;margin:2px 0 14px}
+.odo{display:flex;gap:10px;align-items:end;background:var(--sf);border:1px solid var(--ln);border-radius:10px;padding:12px}
+.odo label{flex:1;font-size:13px;color:var(--mut)}
+input,select,button{font:inherit;color:inherit}
+input,select{width:100%;background:var(--bg);border:1px solid var(--ln);border-radius:8px;padding:9px 10px;margin-top:4px}
+.odo input{font-family:"Barlow Semi Condensed",sans-serif;font-size:26px;font-weight:600}
+button{cursor:pointer;border:1px solid var(--ln);background:var(--sf);border-radius:8px;padding:9px 14px;font-weight:500}
+button.p{background:var(--ac);border-color:var(--ac);color:#fff}
+:root:not([data-theme="light"]) button.p{color:#1a0d14}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--ac);outline-offset:2px}
+.tabs{display:flex;gap:6px;margin:16px 0 4px}
+.tabs button{flex:1;padding:10px 6px;font-family:"Barlow Semi Condensed",sans-serif;font-size:14px;font-weight:600}
+.tabs button[aria-selected="true"]{background:var(--ac);border-color:var(--ac);color:#fff}
+:root:not([data-theme="light"]) .tabs button[aria-selected="true"]{color:#1a0d14}
+.card{background:var(--sf);border:1px solid var(--ln);border-radius:10px;overflow:hidden}
+.row{display:flex;gap:12px;align-items:flex-start;padding:12px;border-top:1px solid var(--ln)}
+.row:first-child{border-top:0}
+.row input[type=checkbox]{width:22px;height:22px;margin:1px 0 0;flex:none;accent-color:var(--ac)}
+.row label{flex:1;cursor:pointer}
+.row.on label{color:var(--mut);text-decoration:line-through}
+.tag{display:inline-block;border-radius:6px;padding:2px 8px;font-size:13px;font-weight:500}
+.t-ok{background:var(--oks);color:var(--ok)}.t-wa{background:var(--was);color:var(--wa)}.t-bad{background:var(--bads);color:var(--bad)}.t-ac{background:var(--acs);color:var(--ac)}
+.due{padding:14px;background:var(--acs);border:1px solid var(--ac);border-radius:10px}
+.due .num{font-size:34px;font-weight:700}
+.grow{flex:1}
+.mut{color:var(--mut);font-size:14px}
+.hide{display:none}
+.f{display:grid;gap:10px;padding:12px}
+.f2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.del{border:0;background:none;color:var(--mut);padding:4px 8px}
+</style>
+</head>
+<body>
+<main>
+<h1>Bitácora Loncin SX3</h1>
+<p class="sub">Revisión diaria, mantenimiento por kilometraje y seguimiento de la bomba de agua.</p>
+
+<div class="odo">
+  <label>Kilometraje actual
+    <input id="km" type="number" inputmode="numeric" min="0" placeholder="0">
+  </label>
+  <button class="p" id="saveKm">Guardar km</button>
+</div>
+
+<div style="margin-top:12px"><button id="exp" style="width:100%">Exportar historial (CSV)</button><div id="expMsg" class="mut" role="status"></div></div>
+<div class="tabs" role="tablist">
+  <button role="tab" id="b0" aria-selected="true">Antes de salir</button>
+  <button role="tab" id="b1" aria-selected="false">Aceite</button>
+  <button role="tab" id="b2" aria-selected="false">Fuga bomba</button>
+  <button role="tab" id="b3" aria-selected="false">Piezas</button>
+</div>
+
+<section id="p0"></section>
+<section id="p1" class="hide"></section>
+<section id="p2" class="hide"></section>
+<section id="p3" class="hide"></section>
+</main>
+
+<script>
+(function(){
+var KEY="sx3-bitacora-v1";
+var S={km:0,done:[],checks:{},leak:[],parts:{}};
+try{var r=localStorage.getItem(KEY);if(r){var o=JSON.parse(r);if(o&&typeof o==="object")S=Object.assign(S,o)}}catch(e){}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+function esc(s){return String(s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
+function fmt(n){return Number(n).toLocaleString("es-DO")}
+function today(){return new Date().toLocaleDateString("es-DO",{day:"numeric",month:"short",year:"numeric"})}
+
+var CHECK=[
+ ["Refrigeración (motor frío)",[
+  "Depósito de refrigerante entre MIN y MAX, con la moto derecha",
+  "Sin gotas ni manchas rosadas bajo el motor ni en el orificio de la bomba",
+  "Mangueras y abrazaderas sin grietas, hinchazón ni holgura"]],
+ ["Motor y frenos",[
+  "Aceite en la mirilla: nivel correcto y color limpio",
+  "Frenos: manetas firmes y líquido en nivel",
+  "Cadena con tensión y lubricación",
+  "Combustible suficiente"]],
+ ["Ruedas, luces y tornillería",[
+  "Presión de llantas en frío y sin objetos clavados",
+  "Farol, luz de freno (maneta y pedal), direccionales y bocina",
+  "Manubrio, escape y pedales sin tornillos flojos"]],
+ ["Al arrancar",[
+  "Ralentí 1 o 2 minutos, sin acelerar a fondo en frío",
+  "Temperatura estable: si sube al rojo, apaga el motor"]]
+];
+
+function renderCheck(){
+  var h="",id=0,total=0,done=0;
+  CHECK.forEach(function(g){
+    h+="<h2>"+g[0]+"</h2><div class='card'>";
+    g[1].forEach(function(t){
+      var on=!!S.checks[id];total++;if(on)done++;
+      h+="<div class='row"+(on?" on":"")+"'><input type='checkbox' id='c"+id+"' data-c='"+id+"'"+(on?" checked":"")+"><label for='c"+id+"'>"+esc(t)+"</label></div>";
+      id++;
+    });
+    h+="</div>";
+  });
+  var head="<div style='display:flex;align-items:center;gap:10px;margin-top:14px'><span class='tag "+(done===total?"t-ok":"t-ac")+"'>"+done+" de "+total+" revisados</span><span class='grow'></span><button id='rc'>Reiniciar lista</button></div>";
+  document.getElementById("p0").innerHTML=head+h;
+}
+
+function nextDue(){
+  if(S.done.length===0)return{km:200,name:"Primer cambio de aceite y filtro"};
+  if(S.done.length===1)return{km:1000,name:"Segundo cambio de aceite y filtro (fin del asentamiento)"};
+  return{km:S.done[S.done.length-1].km+3000,name:"Cambio de aceite y filtro (cada 3,000 km)"};
+}
+function renderOil(){
+  var n=nextDue(),left=n.km-S.km,st,cl;
+  if(left<=0){st="Vencido por "+fmt(-left)+" km";cl="t-bad"}
+  else if(left<=100){st="Faltan "+fmt(left)+" km";cl="t-wa"}
+  else{st="Faltan "+fmt(left)+" km";cl="t-ok"}
+  var h="<div class='due' style='margin-top:14px'><div class='mut'>Próximo servicio</div><div class='num'>"+fmt(n.km)+" km</div><div>"+esc(n.name)+"</div><p style='margin:8px 0 0'><span class='tag "+cl+"'>"+st+"</span></p>";
+  h+="<div class='odo' style='margin-top:12px;background:var(--sf)'><label>Hecho a los (km)<input id='dk' type='number' inputmode='numeric' min='0' value='"+(S.km||"")+"'></label><button class='p' id='markDone'>Marcar hecho</button></div></div>";
+  h+="<h2>Plan</h2><div class='card'>";
+  var plan=[[200,"Primer cambio de aceite y filtro"],[1000,"Segundo cambio de aceite y filtro; termina el asentamiento"]];
+  var base=1000;for(var i=1;i<=3;i++){plan.push([base+3000*i,"Aceite y filtro (cada 3,000 km)"])}
+  plan.forEach(function(p,i){
+    var d=S.done[i];
+    var tag=d?"<span class='tag t-ok'>Hecho a "+fmt(d.km)+" km</span>":(S.km>=p[0]?"<span class='tag t-bad'>Pendiente</span>":"<span class='tag t-ac'>A los "+fmt(p[0])+" km</span>");
+    h+="<div class='row'><div class='grow'>"+esc(p[1])+"</div>"+tag+"</div>";
+  });
+  h+="</div><p class='mut'>Después del segundo cambio, el siguiente se calcula 3,000 km después del último que marques como hecho.</p>";
+  if(S.done.length){
+    h+="<h2>Historial</h2><div class='card'>";
+    S.done.forEach(function(d,i){h+="<div class='row'><div class='grow'>Aceite y filtro a los "+fmt(d.km)+" km <span class='mut'>("+esc(d.date)+")</span></div><button class='del' data-d='"+i+"' aria-label='Borrar registro'>Borrar</button></div>"});
+    h+="</div>";
+  }
+  document.getElementById("p1").innerHTML=h;
+}
+
+function renderLeak(){
+  var h="<div class='card' style='margin-top:14px'><div class='f'><div class='mut'>Anota cómo está el orificio testigo de la bomba cada día.</div><div class='f2'><label class='mut'>Nivel del depósito<select id='lv'><option>Entre MIN y MAX</option><option>En MAX</option><option>Bajo MIN</option></select></label><label class='mut'>Orificio<select id='ho'><option>Seco</option><option>Húmedo</option><option>Gotea</option></select></label></div><label class='mut'>Nota<input id='nt' type='text' placeholder='Cartón seco, trayecto de 20 min...'></label><button class='p' id='addLeak'>Guardar registro</button></div></div>";
+  if(S.leak.length){
+    h+="<h2>Registros</h2><div class='card'>";
+    S.leak.slice().reverse().forEach(function(l,j){
+      var i=S.leak.length-1-j;
+      var cl=l.ho==="Seco"?"t-ok":(l.ho==="Húmedo"?"t-wa":"t-bad");
+      h+="<div class='row'><div class='grow'><div><b>"+esc(l.date)+"</b> <span class='tag "+cl+"'>"+esc(l.ho)+"</span></div><div class='mut'>"+esc(l.lv)+(l.km?" · "+fmt(l.km)+" km":"")+"</div>"+(l.nt?"<div>"+esc(l.nt)+"</div>":"")+"</div><button class='del' data-l='"+i+"' aria-label='Borrar registro'>Borrar</button></div>";
+    });
+    h+="</div><p class='mut'>Si el orificio sigue húmedo o gotea después de una semana, o el nivel baja de MIN, reclama la garantía por el sello de la bomba.</p>";
+  }else h+="<p class='mut'>Sin registros todavía. Un buen primer dato: hoy, orificio seco tras 12 minutos de motor encendido.</p>";
+  document.getElementById("p2").innerHTML=h;
+}
+
+function show(i){
+  for(var k=0;k<4;k++){
+    document.getElementById("p"+k).className=k===i?"":"hide";
+    document.getElementById("b"+k).setAttribute("aria-selected",k===i?"true":"false");
+  }
+}
+var PARTS=[
+ ["Filtro de aire",8000,8000,"Límpialo antes si andas en tierra","r"],
+ ["Bujía",8000,8000,"","r"],
+ ["Revisión de holgura de válvulas",8000,8000,"","r"],
+ ["Cadena y piñones",15000,25000,"Lubrica y tensa la cadena con frecuencia","r"],
+ ["Pastillas de freno",10000,18000,"","r"],
+ ["Líquido de frenos",20000,20000,"O cada 2 años","r"],
+ ["Refrigerante",20000,20000,"","r"],
+ ["Llantas",8000,12000,"","r"],
+ ["Sello mecánico de la bomba de agua",30000,50000,"Antes si gotea por el orificio testigo","e"],
+ ["Rodamientos de ruedas",30000,50000,"Cámbialos si hay juego o ruido","e"],
+ ["Rodamientos de dirección",20000,30000,"Revisa y engrasa; cambia si hay juego","e"],
+ ["Rodamientos y bujes de tijera y linkage",20000,30000,"Revisa y engrasa; cambia si hay juego","e"],
+ ["Discos de clutch",30000,50000,"Antes si el clutch patina","e"],
+ ["Anillos de pistón",40000,60000,"Antes si hay humo azul o poca compresión","e"]
+];
+function renderParts(){
+  var h="<p class='mut' style='margin-top:14px'><b>Referencia</b>: intervalos publicados para la Voge 300 Rally (mismo motor Loncin). <b>Estimado</b>: valores generales de moto de 300 cc, no del fabricante. Confirma con el manual o el distribuidor.</p><div class='card'>";
+  PARTS.forEach(function(p,i){
+    var d=S.parts[i],base=d?d.km:0,left=base+p[1]-S.km,cl,st;
+    if(left<=0){cl="t-bad";st="Toca revisar o cambiar ("+fmt(-left)+" km de atraso)"}
+    else if(left<=p[1]*0.1){cl="t-wa";st="Pronto: faltan "+fmt(left)+" km"}
+    else{cl="t-ok";st="Faltan "+fmt(left)+" km"}
+    var rng=p[1]===p[2]?fmt(p[1])+" km":fmt(p[1])+" a "+fmt(p[2])+" km";
+    h+="<div class='row'><div class='grow'><b>"+esc(p[0])+"</b> <span class='tag "+(p[4]==="r"?"t-ok":"t-wa")+"'>"+(p[4]==="r"?"Referencia":"Estimado")+"</span><div class='mut'>Cada "+rng+(p[3]?". "+esc(p[3]):"")+"</div><div style='margin:6px 0'><span class='tag "+cl+"'>"+st+"</span> <span class='mut'>"+(d?"Último cambio: "+fmt(d.km)+" km ("+esc(d.date)+")":"Sin registro: se cuenta desde 0 km")+"</span></div><div style='display:flex;gap:8px'><input id='pk"+i+"' type='number' inputmode='numeric' min='0' value='"+(S.km||"")+"' aria-label='Km del cambio'><button data-p='"+i+"'>Marcar cambiado</button></div></div></div>";
+  });
+  h+="</div><p class='mut'>El aceite y su filtro están en la pestaña Aceite.</p>";
+  document.getElementById("p3").innerHTML=h;
+}
+function q(v){return '"'+String(v==null?"":v).replace(/"/g,'""')+'"'}
+function doExport(){
+  var rows=[["Fecha","Tipo","Detalle","Km","Nota"]];
+  S.done.forEach(function(d,i){rows.push([d.date,"Aceite y filtro","Cambio n.º "+(i+1),d.km,""])});
+  PARTS.forEach(function(p,i){var d=S.parts[i];if(d)rows.push([d.date,"Pieza cambiada",p[0],d.km,""])});
+  S.leak.forEach(function(l){rows.push([l.date,"Seguimiento de fuga","Orificio: "+l.ho+" | Depósito: "+l.lv,l.km||"",l.nt||""])});
+  var msg=document.getElementById("expMsg");
+  if(rows.length===1){msg.textContent="Todavía no hay registros para exportar.";return}
+  var csv="\uFEFF"+rows.map(function(r){return r.map(q).join(",")}).join("\r\n");
+  var fname="historial-sx3.csv";
+  var pr=(window.claude&&window.claude.use)?window.claude.use("downloads"):Promise.resolve(null);
+  Promise.resolve(pr).then(function(d){
+    if(d)return d.save({filename:fname,data:csv}).then(function(){msg.textContent="Historial guardado."});
+    var a=document.createElement("a");a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"}));a.download=fname;document.body.appendChild(a);a.click();a.remove();msg.textContent="Historial descargado.";
+  }).catch(function(e){msg.textContent=(e&&e.code==="declined")?"Descarga cancelada.":"No se pudo guardar el archivo."});
+}
+function all(){renderCheck();renderOil();renderLeak();renderParts()}
+
+document.getElementById("km").value=S.km||"";
+document.getElementById("saveKm").onclick=function(){
+  var v=parseInt(document.getElementById("km").value,10);
+  S.km=isNaN(v)||v<0?0:v;save();renderOil();renderParts();
+};
+for(var t=0;t<4;t++)(function(t){document.getElementById("b"+t).onclick=function(){show(t)}})(t);
+
+document.addEventListener("click",function(e){
+  var el=e.target;
+  if(el.id==="rc"){S.checks={};save();renderCheck()}
+  else if(el.id==="markDone"){
+    var v=parseInt(document.getElementById("dk").value,10);
+    if(isNaN(v)||v<0)return;
+    S.done.push({km:v,date:today()});if(v>S.km){S.km=v;document.getElementById("km").value=v}renderParts();
+    save();renderOil();
+  }
+  else if(el.dataset&&el.dataset.d!==undefined){S.done.splice(+el.dataset.d,1);save();renderOil()}
+  else if(el.dataset&&el.dataset.p!==undefined){var pi=+el.dataset.p,pv=parseInt(document.getElementById("pk"+pi).value,10);if(!isNaN(pv)&&pv>=0){S.parts[pi]={km:pv,date:today()};if(pv>S.km){S.km=pv;document.getElementById("km").value=pv}save();renderParts();renderOil()}}
+  else if(el.id==="exp"){doExport()}
+  else if(el.id==="addLeak"){
+    S.leak.push({date:today(),lv:document.getElementById("lv").value,ho:document.getElementById("ho").value,nt:document.getElementById("nt").value.trim(),km:S.km||0});
+    save();renderLeak();
+  }
+  else if(el.dataset&&el.dataset.l!==undefined){S.leak.splice(+el.dataset.l,1);save();renderLeak()}
+});
+document.addEventListener("change",function(e){
+  var el=e.target;
+  if(el.dataset&&el.dataset.c!==undefined){S.checks[el.dataset.c]=el.checked;save();renderCheck()}
+});
+all();
+})();
+if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("sw.js").catch(function(){})})}
+</script>
+</body>
+</html>
